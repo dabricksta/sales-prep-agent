@@ -1,0 +1,26 @@
+{
+  "domain": "pvbrewing.example",
+  "note": "Entirely synthetic. Fictional company and people.",
+  "pages": [
+    {
+      "url": "https://pvbrewing.example/",
+      "title": "Pioneer Valley Brewing Co. | Craft beer and taprooms",
+      "text": "Pioneer Valley Brewing Co. is a craft brewery and taproom group with three taprooms: Northampton, MA; Brattleboro, VT; and Keene, NH. Our production brewery is in Holyoke, MA. Founded in 2014. Visit a taproom, join the mug club, or book a private event."
+    },
+    {
+      "url": "https://pvbrewing.example/about",
+      "title": "About Pioneer Valley Brewing Co.",
+      "text": "Founded in 2014 by two friends who homebrewed in a garage, Pioneer Valley Brewing Co. now employs 85 people across three taprooms and the Holyoke production brewery. Our servers and bartenders are tipped employees, and many of our team members work part time. Summer festival season and fall foliage season bring a surge of seasonal hires every year."
+    },
+    {
+      "url": "https://pvbrewing.example/careers",
+      "title": "Careers at Pioneer Valley Brewing Co.",
+      "text": "Open roles: HR & Payroll Coordinator (Northampton, MA). You will run biweekly payroll for employees in three states, handle tip reporting, manage multi-state tax withholding, and administer benefits enrollment. Also hiring: bartenders (all taprooms), line cooks (Northampton), and a packaging technician (Holyoke)."
+    },
+    {
+      "url": "https://valleybiznews.example/pioneer-valley-brewing-opens-keene-taproom",
+      "title": "Pioneer Valley Brewing opens third taproom in Keene",
+      "text": "Pioneer Valley Brewing Co. opened its third taproom in Keene, NH this spring, adding 12 jobs. The owner said the company has outgrown its spreadsheet-based payroll process now that staff are spread across Massachusetts, Vermont and New Hampshire, and that keeping tip reporting accurate across state lines is a growing concern."
+    }
+  ]
+}

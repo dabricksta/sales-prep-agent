@@ -1,0 +1,26 @@
+{
+  "domain": "hilltopdental.example",
+  "note": "Entirely synthetic. Fictional company and people.",
+  "pages": [
+    {
+      "url": "https://hilltopdental.example/",
+      "title": "Hilltop Dental Partners | Family dentistry",
+      "text": "Hilltop Dental Partners provides family dentistry through 8 offices across Massachusetts and Connecticut. Over 120 team members including dentists, hygienists and front desk staff. New patients welcome."
+    },
+    {
+      "url": "https://hilltopdental.example/about",
+      "title": "About Hilltop Dental Partners",
+      "text": "Founded in 2009, Hilltop Dental Partners has grown to 124 employees. Since 2022 we have acquired three independent practices and brought them into the Hilltop family. Our teams include full-time clinicians, part-time hygienists and front-office staff who rotate between locations."
+    },
+    {
+      "url": "https://hilltopdental.example/locations",
+      "title": "Our locations",
+      "text": "Massachusetts: Springfield, Chicopee, Westfield, Amherst. Connecticut: Enfield, Windsor Locks, Suffield, Hartford. Eight offices in total."
+    },
+    {
+      "url": "https://hilltopdental.example/careers",
+      "title": "Careers at Hilltop Dental Partners",
+      "text": "Open roles: HR Generalist (corporate office, Springfield, MA) to support onboarding of newly acquired practices, benefits administration and payroll coordination. Also hiring: Registered Dental Hygienist (Hartford, CT), Office Manager (Westfield, MA), Dental Assistant (multiple locations). Benefits include a 401(k) match and paid time off."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "domain": "sparrowstudio.example",
+  "note": "Entirely synthetic. Fictional company and people. Deliberately a poor fit.",
+  "pages": [
+    {
+      "url": "https://sparrowstudio.example/",
+      "title": "Sparrow Micro Studio",
+      "text": "Sparrow Micro Studio is a small brand and web design studio in Providence, Rhode Island. We work with startups and local shops on identity, websites and packaging."
+    },
+    {
+      "url": "https://sparrowstudio.example/about",
+      "title": "About Sparrow",
+      "text": "Founded in 2021 by two designers. Our team is 4 people, plus occasional freelance collaborators who work as independent contractors. We are remote-friendly and keep things small on purpose."
+    },
+    {
+      "url": "https://sparrowstudio.example/careers",
+      "title": "Careers",
+      "text": "We are not hiring right now. If you are a freelance illustrator or developer, send us a portfolio and we will keep it on file."
+    }
+  ]
+}

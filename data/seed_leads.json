@@ -1,0 +1,62 @@
+[
+  {
+    "id": "L-1001",
+    "company_name": "Pioneer Valley Brewing Co.",
+    "domain": "pvbrewing.example",
+    "contact_name": "Morgan Reyes",
+    "contact_email": "morgan.reyes@pvbrewing.example",
+    "contact_phone": "(413) 555-0142",
+    "industry": "Craft brewery",
+    "employee_count": 60,
+    "state": "MA",
+    "status": "new",
+    "notes": "Inbound web form. Asked about multi-state payroll.",
+    "fit_score": null,
+    "enrichment_summary": null
+  },
+  {
+    "id": "L-1002",
+    "company_name": "Hilltop Dental Partners",
+    "domain": "hilltopdental.example",
+    "contact_name": "Priya Nair",
+    "contact_email": "priya.nair@hilltopdental.example",
+    "contact_phone": "(413) 555-0187",
+    "industry": "Dental group",
+    "employee_count": 100,
+    "state": "MA",
+    "status": "new",
+    "notes": "Referral from existing client.",
+    "fit_score": null,
+    "enrichment_summary": null
+  },
+  {
+    "id": "L-1003",
+    "company_name": "Northbridge Landscaping & Snow",
+    "domain": "northbridgelandscape.example",
+    "contact_name": "Jordan Kessler",
+    "contact_email": "jordan.kessler@northbridgelandscape.example",
+    "contact_phone": "(413) 555-0119",
+    "industry": "Landscaping",
+    "employee_count": 40,
+    "state": "MA",
+    "status": "new",
+    "notes": "Trade show lead.",
+    "fit_score": null,
+    "enrichment_summary": null
+  },
+  {
+    "id": "L-1004",
+    "company_name": "Sparrow Micro Studio",
+    "domain": "sparrowstudio.example",
+    "contact_name": "Alex Tran",
+    "contact_email": "alex.tran@sparrowstudio.example",
+    "contact_phone": "(401) 555-0163",
+    "industry": "Design services",
+    "employee_count": 4,
+    "state": "RI",
+    "status": "new",
+    "notes": "Newsletter signup.",
+    "fit_score": null,
+    "enrichment_summary": null
+  }
+]
