@@ -20,12 +20,19 @@ def test_agent_view_hides_contact_fields(stores):
 
 def test_propose_then_approve_applies_update(stores):
     crm, approvals = stores
-    approval_id = approvals.propose("L-1001", {"employee_count": 85, "enrichment_summary": "Per About page."}, "stale headcount", "run1")
+    approval_id = approvals.propose(
+        "L-1001",
+        {"employee_count": 85, "enrichment_summary": "Per About page."},
+        "stale headcount",
+        "run1",
+    )
     assert crm.get_lead("L-1001")["employee_count"] == 60
     outcome = approvals.decide(approval_id, True, crm)
     assert outcome["status"] == "approved"
     lead = crm.get_lead("L-1001")
-    assert lead["employee_count"] == 85 and lead["enrichment_summary"] == "Per About page."
+    assert (
+        lead["employee_count"] == 85 and lead["enrichment_summary"] == "Per About page."
+    )
     assert approvals.list("pending") == []
 
 
@@ -47,7 +54,9 @@ def test_cannot_decide_twice_or_unknown(stores):
         approvals.decide(999, True, crm)
 
 
-@pytest.mark.parametrize("fields", [{"status": "closed-won"}, {"contact_email": "x@y.z"}, {"id": "L-1"}])
+@pytest.mark.parametrize(
+    "fields", [{"status": "closed-won"}, {"contact_email": "x@y.z"}, {"id": "L-1"}]
+)
 def test_disallowed_fields_rejected(stores, fields):
     _, approvals = stores
     with pytest.raises(DisallowedFieldError):
@@ -55,7 +64,17 @@ def test_disallowed_fields_rejected(stores, fields):
     assert approvals.list(None) == []
 
 
-@pytest.mark.parametrize("fields", [{}, {"employee_count": "85"}, {"employee_count": -1}, {"fit_score": 101}, {"notes": "x" * 1001}, {"employee_count": True}])
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {},
+        {"employee_count": "85"},
+        {"employee_count": -1},
+        {"fit_score": 101},
+        {"notes": "x" * 1001},
+        {"employee_count": True},
+    ],
+)
 def test_invalid_values_rejected(stores, fields):
     _, approvals = stores
     with pytest.raises(ValueError):
@@ -79,7 +98,9 @@ def test_apply_update_is_allowlisted_even_if_called_directly(stores):
 
 def test_sql_injection_in_values_is_inert(stores):
     crm, approvals = stores
-    approval_id = approvals.propose("L-1001", {"notes": "x'; DROP TABLE leads; --"}, "reason")
+    approval_id = approvals.propose(
+        "L-1001", {"notes": "x'; DROP TABLE leads; --"}, "reason"
+    )
     approvals.decide(approval_id, True, crm)
     assert crm.get_lead("L-1001")["notes"] == "x'; DROP TABLE leads; --"
     assert crm.get_lead("L-1002") is not None
@@ -93,11 +114,19 @@ def test_redact_patterns():
     out = redact(text)
     assert "jo@acme.com" not in out and "555-0142" not in out
     assert "123-45-6789" not in out and "12-3456789" not in out
-    assert out.count("[EMAIL]") == 1 and "[SSN]" in out and "[EIN]" in out and "[PHONE]" in out
+    assert (
+        out.count("[EMAIL]") == 1
+        and "[SSN]" in out
+        and "[EIN]" in out
+        and "[PHONE]" in out
+    )
 
 
 def test_redact_leaves_ordinary_numbers_alone():
-    assert redact("Founded in 2014 with 85 employees across 3 sites") == "Founded in 2014 with 85 employees across 3 sites"
+    assert (
+        redact("Founded in 2014 with 85 employees across 3 sites")
+        == "Founded in 2014 with 85 employees across 3 sites"
+    )
 
 
 def test_redact_obj_nested_and_truncates():
@@ -112,5 +141,9 @@ def test_audit_log_writes_redacted_jsonl(tmp_path):
     log.log("run_finished", status="completed")
     lines = (tmp_path / "run1" / "audit.jsonl").read_text().splitlines()
     first = json.loads(lines[0])
-    assert first["event"] == "tool_call" and "ceo@acme.com" not in lines[0] and "[EMAIL]" in lines[0]
+    assert (
+        first["event"] == "tool_call"
+        and "ceo@acme.com" not in lines[0]
+        and "[EMAIL]" in lines[0]
+    )
     assert json.loads(lines[1])["status"] == "completed" and "ts" in first

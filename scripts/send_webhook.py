@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Send a signed "new lead" event to a running `salesprep serve`.
 
-    export WEBHOOK_SECRET=change-me
-    python scripts/send_webhook.py L-1001 --url http://127.0.0.1:8787
+export WEBHOOK_SECRET=change-me
+python scripts/send_webhook.py L-1001 --url http://127.0.0.1:8787
 """
 
 from __future__ import annotations
@@ -19,7 +19,9 @@ from salesprep.server import sign
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("lead_id")
     parser.add_argument("--url", default="http://127.0.0.1:8787")
     args = parser.parse_args()

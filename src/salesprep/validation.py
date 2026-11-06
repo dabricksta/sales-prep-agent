@@ -21,7 +21,9 @@ _NUM_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
 def normalize_url(url: str) -> str:
     parts = urlsplit(url.strip())
     path = parts.path.rstrip("/") or "/"
-    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), path, parts.query, ""))
+    return urlunsplit(
+        (parts.scheme.lower(), parts.netloc.lower(), path, parts.query, "")
+    )
 
 
 def extract_numbers(text: str) -> set[str]:
@@ -47,12 +49,18 @@ def check_brief(
     fetched = {normalize_url(url): text for url, text in pages.items()}
 
     if brief.domain.strip().lower() != lead_domain.strip().lower():
-        errors.append(f"domain must be '{lead_domain}' (the lead's domain), got '{brief.domain}'.")
+        errors.append(
+            f"domain must be '{lead_domain}' (the lead's domain), got '{brief.domain}'."
+        )
 
     if last_score is None:
-        errors.append("call score_fit before submit_brief; fit_score must come from that tool.")
+        errors.append(
+            "call score_fit before submit_brief; fit_score must come from that tool."
+        )
     elif brief.fit_score != last_score["score"]:
-        errors.append(f"fit_score is {brief.fit_score} but score_fit returned {last_score['score']}. Use the tool's value.")
+        errors.append(
+            f"fit_score is {brief.fit_score} but score_fit returned {last_score['score']}. Use the tool's value."
+        )
 
     def unfetched(urls: list[str]) -> list[str]:
         return [u for u in urls if normalize_url(u) not in fetched]
@@ -76,6 +84,8 @@ def check_brief(
     for i, hyp in enumerate(brief.pain_point_hypotheses, start=1):
         missing = unfetched(hyp.evidence_urls)
         if missing:
-            errors.append(f"pain_point_hypotheses[{i}] cites URL(s) you never fetched: {', '.join(missing)}.")
+            errors.append(
+                f"pain_point_hypotheses[{i}] cites URL(s) you never fetched: {', '.join(missing)}."
+            )
 
     return errors

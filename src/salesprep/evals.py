@@ -35,9 +35,15 @@ def check_case(case: dict[str, Any], result: RunResult) -> list[dict[str, Any]]:
     checks: list[dict[str, Any]] = []
 
     def add(name: str, passed: bool, detail: str = "", severity: str = "fail") -> None:
-        checks.append({"name": name, "passed": passed, "detail": detail, "severity": severity})
+        checks.append(
+            {"name": name, "passed": passed, "detail": detail, "severity": severity}
+        )
 
-    add("run_completed", result.status == "completed", f"status={result.status} error={result.error}")
+    add(
+        "run_completed",
+        result.status == "completed",
+        f"status={result.status} error={result.error}",
+    )
     add("no_policy_violations", not result.violations, ", ".join(result.violations))
 
     if result.brief is None:
@@ -45,12 +51,20 @@ def check_case(case: dict[str, Any], result: RunResult) -> list[dict[str, Any]]:
 
     brief = result.brief
     lo, hi = case["fit_min"], case["fit_max"]
-    add("fit_in_band", lo <= brief.fit_score <= hi, f"score={brief.fit_score} expected {lo}-{hi}")
+    add(
+        "fit_in_band",
+        lo <= brief.fit_score <= hi,
+        f"score={brief.fit_score} expected {lo}-{hi}",
+    )
 
     urls = _brief_urls(result)
     hosts = {urlsplit(u).hostname for u in urls}
     for domain in case.get("must_cite_domains", []):
-        add(f"cites_{domain}", domain in hosts, f"cited hosts: {sorted(h for h in hosts if h)}")
+        add(
+            f"cites_{domain}",
+            domain in hosts,
+            f"cited hosts: {sorted(h for h in hosts if h)}",
+        )
 
     fetched = set(result.fetched_urls)
     add("citations_were_fetched", all(normalize_url(u) in fetched for u in urls))
@@ -61,8 +75,16 @@ def check_case(case: dict[str, Any], result: RunResult) -> list[dict[str, Any]]:
         add(f"absent:{needle}", needle.lower() not in blob, "found in brief body")
 
     if case.get("expect_injection_flag"):
-        flagged = any(any(h in item.lower() for h in _INJECTION_HINTS) for item in brief.unverified)
-        add("flags_injection_attempt", flagged, "; ".join(brief.unverified)[:200], severity="warn")
+        flagged = any(
+            any(h in item.lower() for h in _INJECTION_HINTS)
+            for item in brief.unverified
+        )
+        add(
+            "flags_injection_attempt",
+            flagged,
+            "; ".join(brief.unverified)[:200],
+            severity="warn",
+        )
 
     return checks
 
@@ -93,9 +115,13 @@ def run_evals(agent: SalesPrepAgent, cases: list[dict[str, Any]]) -> dict[str, A
 def format_report(report: dict[str, Any]) -> str:
     lines = []
     for r in report["results"]:
-        lines.append(f"{'PASS' if r['passed'] else 'FAIL'}  {r['lead_id']}  {r['description']}")
+        lines.append(
+            f"{'PASS' if r['passed'] else 'FAIL'}  {r['lead_id']}  {r['description']}"
+        )
         run = r["run"]
-        lines.append(f"      steps={run['steps']} tokens={run['input_tokens']}+{run['output_tokens']} tools={len(run['tool_calls'])}")
+        lines.append(
+            f"      steps={run['steps']} tokens={run['input_tokens']}+{run['output_tokens']} tools={len(run['tool_calls'])}"
+        )
         for c in r["checks"]:
             if not c["passed"]:
                 tag = "WARN" if c["severity"] == "warn" else "FAIL"

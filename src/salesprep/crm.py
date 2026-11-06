@@ -32,7 +32,9 @@ LEAD_COLUMNS = (
 )
 
 # Columns the agent may *propose* changes to. Notably excludes `status`.
-WRITABLE_FIELDS = frozenset({"industry", "employee_count", "notes", "fit_score", "enrichment_summary"})
+WRITABLE_FIELDS = frozenset(
+    {"industry", "employee_count", "notes", "fit_score", "enrichment_summary"}
+)
 
 # Columns never shown to the agent.
 AGENT_HIDDEN = frozenset({"contact_email", "contact_phone"})
@@ -63,8 +65,7 @@ class CRM:
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
         with _connect(db_path) as conn:
-            conn.execute(
-                """CREATE TABLE IF NOT EXISTS leads (
+            conn.execute("""CREATE TABLE IF NOT EXISTS leads (
                     id TEXT PRIMARY KEY,
                     company_name TEXT NOT NULL,
                     domain TEXT NOT NULL,
@@ -78,8 +79,7 @@ class CRM:
                     notes TEXT,
                     fit_score INTEGER,
                     enrichment_summary TEXT
-                )"""
-            )
+                )""")
 
     def seed(self, leads: list[dict[str, Any]]) -> int:
         placeholders = ", ".join("?" for _ in LEAD_COLUMNS)
@@ -93,7 +93,9 @@ class CRM:
 
     def get_lead(self, lead_id: str) -> dict[str, Any] | None:
         with _connect(self.db_path) as conn:
-            row = conn.execute("SELECT * FROM leads WHERE id = ?", (lead_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM leads WHERE id = ?", (lead_id,)
+            ).fetchone()
         return dict(row) if row else None
 
     def agent_view(self, lead_id: str) -> dict[str, Any] | None:
@@ -111,7 +113,10 @@ class CRM:
             return
         assignments = ", ".join(f"{col} = ?" for col in fields)
         with _connect(self.db_path) as conn:
-            conn.execute(f"UPDATE leads SET {assignments} WHERE id = ?", [*fields.values(), lead_id])
+            conn.execute(
+                f"UPDATE leads SET {assignments} WHERE id = ?",
+                [*fields.values(), lead_id],
+            )
 
 
 def _validate_fields(fields: Any) -> dict[str, Any]:
@@ -138,8 +143,7 @@ class ApprovalQueue:
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
         with _connect(db_path) as conn:
-            conn.execute(
-                """CREATE TABLE IF NOT EXISTS approvals (
+            conn.execute("""CREATE TABLE IF NOT EXISTS approvals (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     lead_id TEXT NOT NULL,
                     fields_json TEXT NOT NULL,
@@ -148,15 +152,19 @@ class ApprovalQueue:
                     status TEXT NOT NULL DEFAULT 'pending',
                     created_at TEXT NOT NULL,
                     decided_at TEXT
-                )"""
-            )
+                )""")
 
-    def propose(self, lead_id: str, fields: Any, reason: str, run_id: str | None = None) -> int:
+    def propose(
+        self, lead_id: str, fields: Any, reason: str, run_id: str | None = None
+    ) -> int:
         cleaned = _validate_fields(fields)
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("reason is required")
         with _connect(self.db_path) as conn:
-            if conn.execute("SELECT 1 FROM leads WHERE id = ?", (lead_id,)).fetchone() is None:
+            if (
+                conn.execute("SELECT 1 FROM leads WHERE id = ?", (lead_id,)).fetchone()
+                is None
+            ):
                 raise ValueError(f"unknown lead {lead_id}")
             cur = conn.execute(
                 "INSERT INTO approvals (lead_id, fields_json, reason, run_id, created_at) VALUES (?, ?, ?, ?, ?)",
@@ -175,7 +183,9 @@ class ApprovalQueue:
             if status is None:
                 rows = conn.execute("SELECT * FROM approvals ORDER BY id").fetchall()
             else:
-                rows = conn.execute("SELECT * FROM approvals WHERE status = ? ORDER BY id", (status,)).fetchall()
+                rows = conn.execute(
+                    "SELECT * FROM approvals WHERE status = ? ORDER BY id", (status,)
+                ).fetchall()
         out = []
         for row in rows:
             item = dict(row)
@@ -185,7 +195,9 @@ class ApprovalQueue:
 
     def decide(self, approval_id: int, approve: bool, crm: CRM) -> dict[str, Any]:
         with _connect(self.db_path) as conn:
-            row = conn.execute("SELECT * FROM approvals WHERE id = ?", (approval_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM approvals WHERE id = ?", (approval_id,)
+            ).fetchone()
             if row is None:
                 raise ValueError(f"approval {approval_id} not found")
             if row["status"] != "pending":
@@ -193,10 +205,19 @@ class ApprovalQueue:
             new_status = "approved" if approve else "rejected"
             conn.execute(
                 "UPDATE approvals SET status = ?, decided_at = ? WHERE id = ?",
-                (new_status, datetime.now(timezone.utc).isoformat(timespec="seconds"), approval_id),
+                (
+                    new_status,
+                    datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    approval_id,
+                ),
             )
             lead_id = row["lead_id"]
             fields = json.loads(row["fields_json"])
         if approve:
             crm.apply_update(lead_id, fields)
-        return {"id": approval_id, "status": new_status, "lead_id": lead_id, "fields": fields}
+        return {
+            "id": approval_id,
+            "status": new_status,
+            "lead_id": lead_id,
+            "fields": fields,
+        }

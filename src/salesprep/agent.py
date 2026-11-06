@@ -75,7 +75,14 @@ class RunResult:
 
 
 class SalesPrepAgent:
-    def __init__(self, client: Any, config: Config, crm: CRM, approvals: ApprovalQueue, web: Any | None = None) -> None:
+    def __init__(
+        self,
+        client: Any,
+        config: Config,
+        crm: CRM,
+        approvals: ApprovalQueue,
+        web: Any | None = None,
+    ) -> None:
         self.client = client
         self.config = config
         self.crm = crm
@@ -107,16 +114,27 @@ class SalesPrepAgent:
             run_id=run_id,
         )
         tools = tool_definitions(self.config)
-        audit.log("run_started", lead_id=lead_id, model=self.config.model, web_mode=self.config.web_mode)
+        audit.log(
+            "run_started",
+            lead_id=lead_id,
+            model=self.config.model,
+            web_mode=self.config.web_mode,
+        )
 
         messages: list[dict[str, Any]] = [
-            {"role": "user", "content": f"Prepare a call-prep brief for lead {lead_id}. Start by reading the lead record."}
+            {
+                "role": "user",
+                "content": f"Prepare a call-prep brief for lead {lead_id}. Start by reading the lead record.",
+            }
         ]
         max_tokens = self.config.max_output_tokens
         nudges = 0
 
         for step in range(1, self.config.max_steps + 1):
-            if result.input_tokens + result.output_tokens >= self.config.max_total_tokens:
+            if (
+                result.input_tokens + result.output_tokens
+                >= self.config.max_total_tokens
+            ):
                 result.status = "budget_exceeded"
                 result.error = f"token budget of {self.config.max_total_tokens} reached"
                 break
@@ -130,22 +148,34 @@ class SalesPrepAgent:
                     tools=tools,
                     messages=messages,
                 )
-            except Exception as exc:  # noqa: BLE001 - surface any API failure as a failed run
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 - surface any API failure as a failed run
                 result.status = "failed"
-                result.error = f"model call failed: {type(exc).__name__}: {redact(str(exc))[:300]}"
+                result.error = (
+                    f"model call failed: {type(exc).__name__}: {redact(str(exc))[:300]}"
+                )
                 break
 
             usage = getattr(response, "usage", None)
             result.input_tokens += getattr(usage, "input_tokens", 0) or 0
             result.output_tokens += getattr(usage, "output_tokens", 0) or 0
             stop_reason = response.stop_reason
-            audit.log("model_response", step=step, stop_reason=stop_reason, max_tokens=max_tokens)
+            audit.log(
+                "model_response",
+                step=step,
+                stop_reason=stop_reason,
+                max_tokens=max_tokens,
+            )
 
             if stop_reason == "max_tokens":
                 # The reply may end in a truncated tool_use block, which cannot be answered.
                 # Drop it and retry the same turn with a larger output budget.
                 if max_tokens >= MAX_OUTPUT_TOKENS_CEILING:
-                    result.status, result.error = "failed", "response exceeded the maximum output size"
+                    result.status, result.error = (
+                        "failed",
+                        "response exceeded the maximum output size",
+                    )
                     break
                 max_tokens = min(max_tokens * 2, MAX_OUTPUT_TOKENS_CEILING)
                 continue
@@ -158,7 +188,11 @@ class SalesPrepAgent:
                     if getattr(block, "type", None) != "tool_use":
                         continue
                     content, is_error = execute_tool(ctx, block.name, block.input)
-                    entry: dict[str, Any] = {"type": "tool_result", "tool_use_id": block.id, "content": content}
+                    entry: dict[str, Any] = {
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": content,
+                    }
                     if is_error:
                         entry["is_error"] = True
                     tool_results.append(entry)
@@ -178,10 +212,16 @@ class SalesPrepAgent:
                         }
                     )
                     continue
-                result.status, result.error = "failed", "model stopped without submitting a brief"
+                result.status, result.error = (
+                    "failed",
+                    "model stopped without submitting a brief",
+                )
                 break
 
-            result.status, result.error = "failed", f"unexpected stop_reason: {stop_reason}"
+            result.status, result.error = (
+                "failed",
+                f"unexpected stop_reason: {stop_reason}",
+            )
             break
         else:
             result.status = "max_steps"
@@ -193,7 +233,13 @@ class SalesPrepAgent:
         result.tool_calls = list(ctx.tool_calls)
         result.violations = list(ctx.violations)
         result.fetched_urls = sorted(ctx.pages)
-        audit.log("run_finished", status=result.status, steps=result.steps, violations=result.violations, error=result.error)
+        audit.log(
+            "run_finished",
+            status=result.status,
+            steps=result.steps,
+            violations=result.violations,
+            error=result.error,
+        )
         self._write_outputs(result, lead)
         return result
 
@@ -201,10 +247,16 @@ class SalesPrepAgent:
 
     def _write_summary(self, result: RunResult) -> None:
         result.run_dir.mkdir(parents=True, exist_ok=True)
-        (result.run_dir / "summary.json").write_text(json.dumps(result.summary(), indent=2), encoding="utf-8")
+        (result.run_dir / "summary.json").write_text(
+            json.dumps(result.summary(), indent=2), encoding="utf-8"
+        )
 
     def _write_outputs(self, result: RunResult, lead: dict[str, Any]) -> None:
         self._write_summary(result)
         if result.brief is not None:
-            (result.run_dir / "brief.json").write_text(result.brief.model_dump_json(indent=2), encoding="utf-8")
-            (result.run_dir / "brief.md").write_text(brief_to_markdown(result.brief), encoding="utf-8")
+            (result.run_dir / "brief.json").write_text(
+                result.brief.model_dump_json(indent=2), encoding="utf-8"
+            )
+            (result.run_dir / "brief.md").write_text(
+                brief_to_markdown(result.brief), encoding="utf-8"
+            )

@@ -17,7 +17,10 @@ from .crm import CRM, ApprovalQueue
 
 def _make_client() -> Any:
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("ANTHROPIC_API_KEY is not set. Export it (see .env.example) and retry.", file=sys.stderr)
+        print(
+            "ANTHROPIC_API_KEY is not set. Export it (see .env.example) and retry.",
+            file=sys.stderr,
+        )
         raise SystemExit(2)
     import anthropic
 
@@ -47,11 +50,16 @@ def cmd_run(config: Config, args: argparse.Namespace) -> int:
         config = dataclasses.replace(config, model=args.model)
     crm, approvals = _stores(config)
     if crm.get_lead(args.lead_id) is None:
-        print(f"Lead {args.lead_id} not found. Run `salesprep seed` first?", file=sys.stderr)
+        print(
+            f"Lead {args.lead_id} not found. Run `salesprep seed` first?",
+            file=sys.stderr,
+        )
         return 1
     agent = SalesPrepAgent(_make_client(), config, crm, approvals)
     result = agent.run(args.lead_id)
-    print(f"run {result.run_id}: {result.status} in {result.steps} steps, {result.input_tokens}+{result.output_tokens} tokens")
+    print(
+        f"run {result.run_id}: {result.status} in {result.steps} steps, {result.input_tokens}+{result.output_tokens} tokens"
+    )
     if result.violations:
         print(f"policy violations blocked: {result.violations}")
     if result.error:
@@ -63,7 +71,9 @@ def cmd_run(config: Config, args: argparse.Namespace) -> int:
             print((result.run_dir / "brief.md").read_text(encoding="utf-8"))
     pending = [a for a in approvals.list("pending") if a["run_id"] == result.run_id]
     if pending:
-        print(f"{len(pending)} CRM update proposal(s) awaiting review: `salesprep approvals list`")
+        print(
+            f"{len(pending)} CRM update proposal(s) awaiting review: `salesprep approvals list`"
+        )
     return 0 if result.status == "completed" else 1
 
 
@@ -72,14 +82,20 @@ def cmd_serve(config: Config, args: argparse.Namespace) -> int:
 
     secret = os.environ.get("WEBHOOK_SECRET", "")
     if not secret:
-        print("WEBHOOK_SECRET is not set; refusing to start an unauthenticated webhook.", file=sys.stderr)
+        print(
+            "WEBHOOK_SECRET is not set; refusing to start an unauthenticated webhook.",
+            file=sys.stderr,
+        )
         return 2
     crm, approvals = _stores(config)
     agent = SalesPrepAgent(_make_client(), config, crm, approvals)
 
     def run_agent(lead_id: str, run_id: str) -> None:
         result = agent.run(lead_id, run_id=run_id)
-        print(f"[{time.strftime('%H:%M:%S')}] run {run_id} lead {lead_id}: {result.status}", flush=True)
+        print(
+            f"[{time.strftime('%H:%M:%S')}] run {run_id} lead {lead_id}: {result.status}",
+            flush=True,
+        )
 
     app = WebhookApp(
         secret=secret,
@@ -98,7 +114,9 @@ def cmd_approvals(config: Config, args: argparse.Namespace) -> int:
         if not rows:
             print("No approvals." if args.all else "No pending approvals.")
         for row in rows:
-            print(f"#{row['id']} [{row['status']}] lead {row['lead_id']} run {row['run_id']}")
+            print(
+                f"#{row['id']} [{row['status']}] lead {row['lead_id']} run {row['run_id']}"
+            )
             print(f"    fields: {json.dumps(row['fields'])}")
             print(f"    reason: {row['reason']}")
         return 0
@@ -136,14 +154,19 @@ def cmd_eval(config: Config, args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="salesprep", description="Claude-based sales call-prep agent (synthetic data demo).")
+    parser = argparse.ArgumentParser(
+        prog="salesprep",
+        description="Claude-based sales call-prep agent (synthetic data demo).",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("seed", help="load synthetic leads into the mock CRM")
 
     p_run = sub.add_parser("run", help="run the agent for one lead")
     p_run.add_argument("lead_id")
-    p_run.add_argument("--web", choices=["fixture", "live"], help="override SALESPREP_WEB")
+    p_run.add_argument(
+        "--web", choices=["fixture", "live"], help="override SALESPREP_WEB"
+    )
     p_run.add_argument("--model", help="override SALESPREP_MODEL")
     p_run.add_argument("--show", action="store_true", help="print the brief when done")
 

@@ -67,10 +67,18 @@ class FixtureWeb:
 
     def fetch(self, url: str, domain: str) -> dict[str, str]:
         page = self._by_url.get(normalize_url(url))
-        allowed = {normalize_url(p["url"]) for p in self._by_domain.get(domain.lower(), [])}
+        allowed = {
+            normalize_url(p["url"]) for p in self._by_domain.get(domain.lower(), [])
+        }
         if page is None or normalize_url(url) not in allowed:
-            raise WebError(f"404: no page found at {url}. Use search_web to discover valid URLs.")
-        return {"url": page["url"], "title": page["title"], "text": page["text"][: self.page_char_limit]}
+            raise WebError(
+                f"404: no page found at {url}. Use search_web to discover valid URLs."
+            )
+        return {
+            "url": page["url"],
+            "title": page["title"],
+            "text": page["text"][: self.page_char_limit],
+        }
 
 
 # ---------------------------------------------------------------- live mode
@@ -156,7 +164,9 @@ class LiveWeb:
         self._transport = transport  # injectable httpx transport (used by tests)
 
     def search(self, query: str, domain: str, limit: int = 5) -> list[dict[str, str]]:
-        raise WebError("search_web is unavailable in live mode. Use fetch_page on pages of the lead's own site (try /, /about, /careers).")
+        raise WebError(
+            "search_web is unavailable in live mode. Use fetch_page on pages of the lead's own site (try /, /about, /careers)."
+        )
 
     def _check_url(self, url: str) -> None:
         parts = urlsplit(url)
@@ -166,7 +176,9 @@ class LiveWeb:
         if not host:
             raise WebError("URL has no host")
         if host != self.allowed_domain and not host.endswith("." + self.allowed_domain):
-            raise WebError(f"only pages on {self.allowed_domain} can be fetched in live mode")
+            raise WebError(
+                f"only pages on {self.allowed_domain} can be fetched in live mode"
+            )
         ips = self._resolver(host)
         if not ips or not all(is_public_ip(ip) for ip in ips):
             raise WebError("host resolves to a non-public address; blocked")
@@ -192,10 +204,14 @@ class LiveWeb:
                             current = urljoin(current, location)
                             continue
                         if resp.status_code >= 400:
-                            raise WebError(f"HTTP {resp.status_code} fetching {current}")
+                            raise WebError(
+                                f"HTTP {resp.status_code} fetching {current}"
+                            )
                         ctype = resp.headers.get("content-type", "")
                         if "html" not in ctype and "text" not in ctype:
-                            raise WebError(f"unsupported content type: {ctype or 'unknown'}")
+                            raise WebError(
+                                f"unsupported content type: {ctype or 'unknown'}"
+                            )
                         body = b""
                         for chunk in resp.iter_bytes():
                             body += chunk
@@ -204,7 +220,11 @@ class LiveWeb:
                 except httpx.HTTPError as exc:
                     raise WebError(f"network error: {type(exc).__name__}") from exc
                 title, text = extract_text(body.decode("utf-8", errors="replace"))
-                return {"url": current, "title": title or current, "text": text[: self.page_char_limit]}
+                return {
+                    "url": current,
+                    "title": title or current,
+                    "text": text[: self.page_char_limit],
+                }
         raise WebError("too many redirects")
 
 

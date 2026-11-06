@@ -26,7 +26,14 @@ def sign(secret: bytes, timestamp: str, body: bytes) -> str:
     return "sha256=" + mac.hexdigest()
 
 
-def verify(secret: bytes, timestamp: str, body: bytes, signature: str, now: float, max_skew: int) -> bool:
+def verify(
+    secret: bytes,
+    timestamp: str,
+    body: bytes,
+    signature: str,
+    now: float,
+    max_skew: int,
+) -> bool:
     try:
         ts = float(timestamp)
     except (TypeError, ValueError):
@@ -47,7 +54,9 @@ class WebhookApp:
         clock: Callable[[], float] = time.time,
     ) -> None:
         if not secret:
-            raise ValueError("WEBHOOK_SECRET must be set; refusing to start an unauthenticated webhook")
+            raise ValueError(
+                "WEBHOOK_SECRET must be set; refusing to start an unauthenticated webhook"
+            )
         self._secret = secret.encode()
         self._lead_exists = lead_exists
         self._run_agent = run_agent
@@ -55,14 +64,23 @@ class WebhookApp:
         self._clock = clock
         self._pool = ThreadPoolExecutor(max_workers=workers)
 
-    def handle(self, method: str, path: str, headers: Mapping[str, str], body: bytes) -> tuple[int, dict[str, Any]]:
+    def handle(
+        self, method: str, path: str, headers: Mapping[str, str], body: bytes
+    ) -> tuple[int, dict[str, Any]]:
         if method != "POST" or path != "/webhook/new-lead":
             return 404, {"error": "not found"}
         if len(body) > MAX_BODY_BYTES:
             return 413, {"error": "body too large"}
 
         lowered = {k.lower(): v for k, v in headers.items()}
-        if not verify(self._secret, lowered.get("x-timestamp", ""), body, lowered.get("x-signature", ""), self._clock(), self._max_skew):
+        if not verify(
+            self._secret,
+            lowered.get("x-timestamp", ""),
+            body,
+            lowered.get("x-signature", ""),
+            self._clock(),
+            self._max_skew,
+        ):
             return 401, {"error": "invalid signature"}
 
         try:

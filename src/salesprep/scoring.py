@@ -52,17 +52,27 @@ def score_fit(
     industry: str | None,
     home_region_states: tuple[str, ...] = ("MA",),
 ) -> dict[str, Any]:
-    if employee_count is not None and (isinstance(employee_count, bool) or not isinstance(employee_count, int) or employee_count < 0):
+    if employee_count is not None and (
+        isinstance(employee_count, bool)
+        or not isinstance(employee_count, int)
+        or employee_count < 0
+    ):
         raise ValueError("employee_count must be a non-negative integer")
-    if not isinstance(states, list) or not all(isinstance(s, str) and _STATE_RE.match(s) for s in states):
-        raise ValueError("states must be a list of two-letter US state codes, e.g. ['MA', 'NH']")
+    if not isinstance(states, list) or not all(
+        isinstance(s, str) and _STATE_RE.match(s) for s in states
+    ):
+        raise ValueError(
+            "states must be a list of two-letter US state codes, e.g. ['MA', 'NH']"
+        )
 
     unique_states = sorted({s.upper() for s in states})
     home = {s.upper() for s in home_region_states}
     breakdown: list[dict[str, Any]] = []
 
     pts, note = _employee_points(employee_count)
-    breakdown.append({"factor": "company size", "points": pts, "max_points": 25, "note": note})
+    breakdown.append(
+        {"factor": "company size", "points": pts, "max_points": 25, "note": note}
+    )
 
     multi = len(unique_states) >= 2
     breakdown.append(
@@ -78,7 +88,11 @@ def score_fit(
             "factor": "tipped or seasonal workforce",
             "points": 20 if tipped_or_seasonal_workforce else 0,
             "max_points": 20,
-            "note": "complex wage/tax handling" if tipped_or_seasonal_workforce else "not observed",
+            "note": (
+                "complex wage/tax handling"
+                if tipped_or_seasonal_workforce
+                else "not observed"
+            ),
         }
     )
     breakdown.append(
@@ -86,10 +100,16 @@ def score_fit(
             "factor": "hiring HR/payroll roles",
             "points": 15 if hiring_hr_or_payroll_roles else 0,
             "max_points": 15,
-            "note": "active need or capacity gap" if hiring_hr_or_payroll_roles else "not observed",
+            "note": (
+                "active need or capacity gap"
+                if hiring_hr_or_payroll_roles
+                else "not observed"
+            ),
         }
     )
-    industry_match = bool(industry) and any(k in industry.lower() for k in PREFERRED_INDUSTRY_KEYWORDS)
+    industry_match = bool(industry) and any(
+        k in industry.lower() for k in PREFERRED_INDUSTRY_KEYWORDS
+    )
     breakdown.append(
         {
             "factor": "target industry",

@@ -24,7 +24,12 @@ def signed(body: dict | bytes, ts: float = NOW, secret: str = SECRET):
 @pytest.fixture
 def app_and_calls():
     calls: list[tuple[str, str]] = []
-    app = WebhookApp(SECRET, lambda lead_id: lead_id == "L-1001", lambda lead_id, run_id: calls.append((lead_id, run_id)), clock=lambda: NOW)
+    app = WebhookApp(
+        SECRET,
+        lambda lead_id: lead_id == "L-1001",
+        lambda lead_id, run_id: calls.append((lead_id, run_id)),
+        clock=lambda: NOW,
+    )
     yield app, calls
     app.shutdown(wait=True)
 
@@ -35,7 +40,9 @@ def test_verify_signature_and_skew():
     assert verify(b"k", "1000", body, sig, now=1100, max_skew=300)
     assert not verify(b"k", "1000", body, sig, now=1400, max_skew=300)  # too old
     assert not verify(b"other", "1000", body, sig, now=1000, max_skew=300)
-    assert not verify(b"k", "1000", body + b" ", sig, now=1000, max_skew=300)  # tampered body
+    assert not verify(
+        b"k", "1000", body + b" ", sig, now=1000, max_skew=300
+    )  # tampered body
     assert not verify(b"k", "abc", body, sig, now=1000, max_skew=300)
     assert not verify(b"k", "1000", body, "", now=1000, max_skew=300)
 
@@ -53,10 +60,25 @@ def test_webhook_rejections(app_and_calls):
     app, calls = app_and_calls
     body, headers = signed({"lead_id": "L-1001"})
     assert app.handle("POST", "/webhook/new-lead", {}, body)[0] == 401  # unsigned
-    assert app.handle("POST", "/webhook/new-lead", {**headers, "X-Signature": "sha256=bad"}, body)[0] == 401
+    assert (
+        app.handle(
+            "POST", "/webhook/new-lead", {**headers, "X-Signature": "sha256=bad"}, body
+        )[0]
+        == 401
+    )
     old_body, old_headers = signed({"lead_id": "L-1001"}, ts=NOW - 10_000)
-    assert app.handle("POST", "/webhook/new-lead", old_headers, old_body)[0] == 401  # replay window
-    assert app.handle("POST", "/webhook/new-lead", signed({"lead_id": "L-9999"})[1], signed({"lead_id": "L-9999"})[0])[0] == 404
+    assert (
+        app.handle("POST", "/webhook/new-lead", old_headers, old_body)[0] == 401
+    )  # replay window
+    assert (
+        app.handle(
+            "POST",
+            "/webhook/new-lead",
+            signed({"lead_id": "L-9999"})[1],
+            signed({"lead_id": "L-9999"})[0],
+        )[0]
+        == 404
+    )
     for bad in ({"lead_id": "../etc"}, {"lead_id": 5}, {"other": 1}):
         raw, hdrs = signed(bad)
         assert app.handle("POST", "/webhook/new-lead", hdrs, raw)[0] == 400
@@ -100,7 +122,9 @@ def test_eval_harness_passes_and_fails_correctly(config, stores):
     assert report["passed"] and report["cases_passed"] == 1
     assert "PASS  L-1001" in format_report(report)
 
-    run = SalesPrepAgent(FakeClient(script_l1001()), config, crm, approvals).run("L-1001")
+    run = SalesPrepAgent(FakeClient(script_l1001()), config, crm, approvals).run(
+        "L-1001"
+    )
     wrong_band = {**cases[3]}  # the "poor fit" case: expects 0-20, brief says 100
     checks = {c["name"]: c for c in check_case(wrong_band, run)}
     assert checks["fit_in_band"]["passed"] is False
@@ -109,9 +133,16 @@ def test_eval_harness_passes_and_fails_correctly(config, stores):
 
 def test_eval_flags_policy_violations_and_forbidden_text(config, stores):
     crm, approvals = stores
-    run = SalesPrepAgent(FakeClient(script_l1001()), config, crm, approvals).run("L-1001")
+    run = SalesPrepAgent(FakeClient(script_l1001()), config, crm, approvals).run(
+        "L-1001"
+    )
     run.violations.append("disallowed_field_write:status")
-    case = {"lead_id": "L-1001", "fit_min": 0, "fit_max": 100, "forbidden_substrings": ["biweekly payroll"]}
+    case = {
+        "lead_id": "L-1001",
+        "fit_min": 0,
+        "fit_max": 100,
+        "forbidden_substrings": ["biweekly payroll"],
+    }
     checks = {c["name"]: c for c in check_case(case, run)}
     assert checks["no_policy_violations"]["passed"] is False
     assert checks["absent:biweekly payroll"]["passed"] is False

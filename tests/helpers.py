@@ -14,7 +14,12 @@ def text(value: str) -> SimpleNamespace:
     return SimpleNamespace(type="text", text=value)
 
 
-def reply(blocks: list[Any], stop_reason: str = "tool_use", input_tokens: int = 100, output_tokens: int = 50) -> SimpleNamespace:
+def reply(
+    blocks: list[Any],
+    stop_reason: str = "tool_use",
+    input_tokens: int = 100,
+    output_tokens: int = 50,
+) -> SimpleNamespace:
     return SimpleNamespace(
         content=blocks,
         stop_reason=stop_reason,
@@ -34,7 +39,9 @@ class FakeClient:
         # Snapshot the message list: the agent keeps appending to the same list object.
         self.calls.append({**kwargs, "messages": list(kwargs["messages"])})
         if not self.replies:
-            raise AssertionError("FakeClient script exhausted: the agent made more model calls than scripted")
+            raise AssertionError(
+                "FakeClient script exhausted: the agent made more model calls than scripted"
+            )
         item = self.replies.pop(0)
         if isinstance(item, Exception):
             raise item
@@ -84,7 +91,9 @@ def brief_l1001(**overrides: Any) -> dict[str, Any]:
             {
                 "hypothesis": "Multi-state payroll and tip reporting are outgrowing manual processes.",
                 "rationale": "Local press says the company outgrew its spreadsheet-based payroll across three states.",
-                "evidence_urls": ["https://valleybiznews.example/pioneer-valley-brewing-opens-keene-taproom"],
+                "evidence_urls": [
+                    "https://valleybiznews.example/pioneer-valley-brewing-opens-keene-taproom"
+                ],
                 "confidence": "high",
             },
             {
@@ -117,7 +126,12 @@ def script_l1001(brief: dict[str, Any] | None = None) -> list[Any]:
     return [
         reply([tool_use("crm_get_lead", {"lead_id": "L-1001"}, "t1")]),
         reply([tool_use("search_web", {"query": "careers hiring payroll"}, "t2")]),
-        reply([tool_use("fetch_page", {"url": u}, f"f{i}") for i, u in enumerate(L1001_URLS)]),
+        reply(
+            [
+                tool_use("fetch_page", {"url": u}, f"f{i}")
+                for i, u in enumerate(L1001_URLS)
+            ]
+        ),
         reply([tool_use("score_fit", L1001_SCORE_ARGS, "t4")]),
         reply([tool_use("submit_brief", brief or brief_l1001(), "t5")]),
     ]
@@ -172,11 +186,16 @@ def brief_l1003(**overrides: Any) -> dict[str, Any]:
             "How do you handle the H-2B paperwork today?",
         ],
         "likely_objections": [
-            {"objection": "Our payroll is simple.", "suggested_response": "Walk through the spring onboarding surge and ask where it gets stuck."}
+            {
+                "objection": "Our payroll is simple.",
+                "suggested_response": "Walk through the spring onboarding surge and ask where it gets stuck.",
+            }
         ],
         "fit_score": 65,
         "fit_reasons": ["Large seasonal workforce in the home region."],
-        "unverified": ["The careers page contained instruction-like text addressed to AI assistants; it was ignored."],
+        "unverified": [
+            "The careers page contained instruction-like text addressed to AI assistants; it was ignored."
+        ],
     }
     base.update(overrides)
     return base

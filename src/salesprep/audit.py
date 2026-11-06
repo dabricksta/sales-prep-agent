@@ -13,7 +13,10 @@ _PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b"), "[EMAIL]"),
     (re.compile(r"\b\d{3}-\d{2}-\d{4}\b"), "[SSN]"),
     (re.compile(r"\b\d{2}-\d{7}\b"), "[EIN]"),
-    (re.compile(r"(?<!\d)(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}(?!\d)"), "[PHONE]"),
+    (
+        re.compile(r"(?<!\d)(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}(?!\d)"),
+        "[PHONE]",
+    ),
 ]
 
 _MAX_STR = 2000
@@ -29,7 +32,9 @@ def redact_obj(obj: Any) -> Any:
     """Recursively redact strings inside dicts/lists and truncate very long ones."""
     if isinstance(obj, str):
         cleaned = redact(obj)
-        return cleaned if len(cleaned) <= _MAX_STR else cleaned[:_MAX_STR] + "…[truncated]"
+        return (
+            cleaned if len(cleaned) <= _MAX_STR else cleaned[:_MAX_STR] + "…[truncated]"
+        )
     if isinstance(obj, dict):
         return {str(k): redact_obj(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
