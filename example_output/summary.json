@@ -1,0 +1,24 @@
+{
+  "run_id": "52948812cad3",
+  "lead_id": "L-1003",
+  "status": "completed",
+  "steps": 5,
+  "input_tokens": 20139,
+  "output_tokens": 2437,
+  "tool_calls": [
+    "crm_get_lead",
+    "search_web",
+    "fetch_page",
+    "fetch_page",
+    "fetch_page",
+    "score_fit",
+    "submit_brief"
+  ],
+  "violations": [],
+  "fetched_urls": [
+    "https://northbridgelandscape.example/",
+    "https://northbridgelandscape.example/about",
+    "https://northbridgelandscape.example/careers"
+  ],
+  "error": null
+}
